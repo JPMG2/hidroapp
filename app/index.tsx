@@ -1,16 +1,49 @@
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import color from './styles/color';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
-export default function Index() {
+export default function IndexScreen() {
+  const { isAuthenticated, login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/home');
+    }
+  }, [isAuthenticated]);
+
   return (
     <View style={styles.container}>
       <Image source={require('../assets/images/Logo_blanco.png')} style={styles.image} />
       <Text style={styles.title}>Bienvenido</Text>
 
-      <TextInput placeholder={'Correo'} style={styles.input} />
-      <TextInput placeholder={'Contraseña'} secureTextEntry={true} style={styles.input} />
+      <TextInput
+        placeholder={'Correos'}
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+        keyboardType={'email-address'}
+        autoCapitalize={'none'}
+        autoCorrect={false}
+      />
+      <TextInput
+        placeholder={'Contraseña'}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={true}
+        style={styles.input}
+      />
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          login(email, password);
+        }}
+      >
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
     </View>
