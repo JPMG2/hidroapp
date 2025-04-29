@@ -1,7 +1,6 @@
 // app/home.tsx
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
-import { useEffect } from 'react';
 import { ProtectedScreen } from '@/components/ProtectedScreen';
 
 export default function HomeScreen() {

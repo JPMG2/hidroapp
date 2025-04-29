@@ -1,20 +1,59 @@
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import color from '@/styles/color';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 
 export default function IndexScreen() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, isChecking, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isChecking && isAuthenticated) {
       router.replace('/home');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isChecking]);
+
+  const handleLogin = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!email) {
+      newErrors.email = 'El correo es obligatorio';
+    }
+
+    if (!password) {
+      newErrors.password = 'La contraseña es obligatoria';
+    }
+
+    setErrors(newErrors);
+
+    // Si hay errores, no continuar
+    if (Object.keys(newErrors).length > 0) return;
+
+    login(email, password);
+  };
+
+  if (isChecking) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingRow}>
+          <ActivityIndicator size="small" color="#87CEEB" />
+          <Text style={styles.loadingTitle}>Cargando...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -22,7 +61,7 @@ export default function IndexScreen() {
       <Text style={styles.title}>Bienvenido</Text>
 
       <TextInput
-        placeholder={'Correos'}
+        placeholder={'Correo'}
         value={email}
         onChangeText={setEmail}
         style={styles.input}
@@ -30,6 +69,7 @@ export default function IndexScreen() {
         autoCapitalize={'none'}
         autoCorrect={false}
       />
+      {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
       <TextInput
         placeholder={'Contraseña'}
         value={password}
@@ -37,13 +77,9 @@ export default function IndexScreen() {
         secureTextEntry={true}
         style={styles.input}
       />
+      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          login(email, password);
-        }}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
     </View>
@@ -70,12 +106,27 @@ const styles = StyleSheet.create({
     color: color.darkText,
     marginBottom: 20,
   },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loadingTitle: {
+    marginLeft: 10,
+    fontSize: 22,
+    color: '#87CEEB',
+  },
   input: {
     width: '100%',
     padding: 12,
     borderRadius: 8,
     backgroundColor: '#f1f1f1',
     marginBottom: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 13,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
   },
   button: {
     backgroundColor: color.primary,

@@ -1,17 +1,21 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 export function ProtectedScreen({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [hasTriedRedirecting, setHasTriedRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/');
+    if (!isAuthenticated && !hasTriedRedirecting) {
+      setHasTriedRedirecting(true);
+      setTimeout(() => {
+        router.replace('/');
+      }, 10);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, hasTriedRedirecting]);
   if (!isAuthenticated) {
     return (
       <View
@@ -25,5 +29,6 @@ export function ProtectedScreen({ children }: { children: React.ReactNode }) {
       </View>
     );
   }
+
   return children;
 }
